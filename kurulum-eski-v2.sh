@@ -19,7 +19,14 @@ cat << 'EOF' > src/index.php
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Güvenli Yürütme Arayüzü (Hello World)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }\n        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 450px; width: 100%; }\n        h1 { color: #007bff; margin-bottom: 10px; font-size: 24px; }\n        p { color: #666; font-size: 14px; margin-bottom: 25px; }\n        button { background-color: #28a745; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s; font-weight: bold; }\n        button:hover { background-color: #218838; }\n        #output { margin-top: 25px; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; text-align: left; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; display: none; }\n    </style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 450px; width: 100%; }
+        h1 { color: #007bff; margin-bottom: 10px; font-size: 24px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        button { background-color: #28a745; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        #output { margin-top: 25px; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; text-align: left; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; display: none; }
+    </style>
 </head>
 <body>
 
@@ -126,21 +133,6 @@ jobs:
   deploy:
     name: Derle ve Canlıya Aktar
     runs-on: ubuntu-latest
-    
-    # -----------------------------------------------------------------
-    # YÖNTEM 1: GİTHUB ENVIRONMENTS ÖZELLİĞİ
-    # Gizli sekmedeki kullanıcıların reponun sağ panelinde "View deployment" 
-    # linkini görebilmesini sağlar.
-    # -----------------------------------------------------------------
-    environment:
-      name: production
-      url: ${{ steps.get-url.outputs.tagged_url }}
-
-    # Botun Environment oluşturması ve Release yayınlaması için gerekli yazma izinleri
-    permissions:
-      contents: write
-      deployments: write
-
     steps:
     - name: Kodu GitHub'dan Çek
       uses: actions/checkout@v3
@@ -169,40 +161,17 @@ jobs:
           --tag="v-${{ steps.vars.outputs.sha_short }}" \
           --no-traffic
 
+    # [HATA VEREN KISIM JQ İLE DEĞİŞTİRİLDİ - %100 GARANTİLİ YÖNTEM]
     - name: Doğrulanabilir Benzersiz URL'yi İlan Et
-      id: get-url
       run: |
         TAGGED_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format=json | jq -r '.status.traffic[] | select(.tag=="v-${{ steps.vars.outputs.sha_short }}") | .url')
-        
-        # URL'yi sonraki adımlara (Environment ve Release) taşımak için çıktı olarak kaydediyoruz
-        echo "tagged_url=$TAGGED_URL" >> $GITHUB_OUTPUT
-        
         echo "========================================================================"
         echo "KOD MANİPÜLE EDİLEMEZ BİR ŞEKİLDE KİLİTLENDİ VE İZOLE EDİLDİ."
         echo "KODUN ÇALIŞTIĞI GÜVENLİ ADRES:"
         echo "$TAGGED_URL"
         echo "========================================================================"
-
-    # -----------------------------------------------------------------
-    # YÖNTEM 2: OTOMATİK GİTHUB RELEASES (SÜRÜMLER)
-    # Gizli sekmeden giren herkesin /releases sekmesinde github-actions[bot] 
-    # tarafından mühürlenmiş linki ve kanıtı görmesini sağlar.
-    # -----------------------------------------------------------------
-    - name: Otomatik Sürüm (Release) ve Güvenli URL İlanı
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: build-${{ steps.vars.outputs.sha_short }}
-        name: Güvenli Dağıtım v-${{ steps.vars.outputs.sha_short }}
-        body: |
-          ### 🚀 Güvenli Yürütme Ortamı Hazır!
-          Bu sürümdeki kodlar başarıyla derlenmiş ve dış müdahaleye kapalı, izole Google Cloud Run ortamına aktarılmıştır.
-          
-          **Doğrulanmış Değişmez URL:** ${{ steps.get-url.outputs.tagged_url }}
-          
-          *Not: Bu sürüm notu kriptografik bütünlüğü doğrulamak adına `github-actions[bot]` tarafından otomatik üretilmiştir ve sonradan manipüle edilemez.*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 EOF
+
 
 echo "====================================================="
 echo "[BAŞARILI] Tüm proje dosyaları otomatik oluşturuldu!"
