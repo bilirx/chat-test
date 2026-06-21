@@ -154,7 +154,8 @@ jobs:
           --image gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} \
           --region $REGION \
           --platform managed \
-          --allow-unauthenticated
+          --allow-unauthenticated\
+          --service-account=bilirx-gcr-chat-test@bilirx.iam.gserviceaccount.com  # <-- Bu satırı ekle
 EOF
 
 echo "====================================================="
