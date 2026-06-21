@@ -17,7 +17,7 @@
 <body>
 
 <div class="container">
-    <h1>Güvenli Kod Doğrulama Sistemi</h1>
+    <h1>Güvenli Kod Doğrulama Sistemi .-></h1>
     <p>Bu arayüz, GitHub'da incelediğiniz açık kaynaklı kodların Google Cloud Run üzerinde manipüle edilmeden çalıştığının kanıtıdır.</p>
     
     <button onclick="tetikleVeGetir()">API'den Güvenli Dosyayı İste</button>
