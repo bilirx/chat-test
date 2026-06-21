@@ -125,7 +125,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: bilirx-gcr-chat-test
+  PROJECT_ID: bilirx
   SERVICE_NAME: guvenli-php-app
   REGION: europe-west3
 
