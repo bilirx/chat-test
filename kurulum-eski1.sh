@@ -113,6 +113,7 @@ COPY src/ /usr/src/guvenli-app
 WORKDIR /usr/src/guvenli-app
 CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080}"]
 EOF
+
 # 5. .github/workflows/deploy.yml oluştur
 echo "--> .github/workflows/deploy.yml oluşturuluyor..."
 cat << 'EOF' > .github/workflows/deploy.yml
@@ -147,32 +148,15 @@ jobs:
         docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} .
         docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
 
-    # [YENİ EKLEDİĞİMİZ ADIM]: URL'nin okunabilir olması için 7 haneli kısa commit kodunu alıyoruz.
-    - name: Kısa Commit SHA Kodu Üret
-      id: vars
-      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-    # [GÜNCELLENEN ADIM]: Parametreler eklenerek Tam İzolasyon sağlandı.
     - name: Cloud Run Üzerinde Yayına Al
       run: |
         gcloud run deploy $SERVICE_NAME \
           --image gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} \
           --region $REGION \
           --platform managed \
-          --tag="v-${{ steps.vars.outputs.sha_short }}" \
-          --no-traffic
-
-    # [YENİ EKLEDİĞİMİZ ADIM]: Karşı tarafın tıklayıp doğrulayacağı o benzersiz güvenli linki loglara basar.
-    - name: Doğrulanabilir Benzersiz URL'yi İlan Et
-      run: |
-        TAGGED_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format='value(status.traffic.where(tag="v-${{ steps.vars.outputs.sha_short }}").url)')
-        echo "========================================================================"
-        echo "KOD MANİPÜLE EDİLEMEZ BİR ŞEKİLDE KİLİTLENDİ VE İZOLE EDİLDİ."
-        echo "KODUN ÇALIŞTIĞI GÜVENLİ ADRES:"
-        echo "$TAGGED_URL"
-        echo "========================================================================"
+          --allow-unauthenticated\
+          --service-account=bilirx-gcr-chat-test@bilirx.iam.gserviceaccount.com  # <-- Bu satırı ekle
 EOF
-
 
 echo "====================================================="
 echo "[BAŞARILI] Tüm proje dosyaları otomatik oluşturuldu!"

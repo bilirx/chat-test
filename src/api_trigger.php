@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 $is_cloud_run = (getenv('K_SERVICE') !== false);
 
 if ($is_cloud_run) {
-    $target_audience = "https://www.bilirx.com/initial-prompt"; 
+    $target_audience = "https://sizin-merkezi-api-sunucunuz.com"; 
     $metadata_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=" . urlencode($target_audience);
 
     $opts = [
